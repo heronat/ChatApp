@@ -1,0 +1,11 @@
+spring.datasource.url=jdbc:postgresql://localhost:5532/sr03_postgres
+spring.datasource.username=sr03
+spring.datasource.password=password-sr03
+spring.jpa.hibernate.ddl-auto=update
+server.port=8080
+# Auth App Properties
+utc.chat.app.jwtSecret=yoN8E5dbc6Za+mdUnfDPiGEurGVwoXDmSrHDOtzon7E=
+utc.chat.app.jwtExpirationMs=86400000
+# Analyze Messages Toxicity
+utc.chat.app.analyzeMessagesToxicity=True
+utc.chat.app.toxicityAnalyzerLink=http://localhost:8090/analyze
