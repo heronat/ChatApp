@@ -1,0 +1,72 @@
+version: '3.8'
+name: sr03-chatapp
+services:
+  toxicity:
+    container_name: sr03-chatapp-toxicity-analyzer
+    build:
+      dockerfile: Dockerfile
+      context: toxicity_analyzer
+    environment:
+      - DOCKER_ENV=production
+    ports:
+      - "8090:8090"
+    depends_on:
+      - postgres
+    networks:
+      - sr03-network
+  postgres:
+    container_name: sr03_chatapp_postgres
+    build:
+      dockerfile: Dockerfile
+      context: bdd
+    environment:
+      POSTGRES_USER: "sr03"
+      POSTGRES_PASSWORD: "password-sr03"
+      POSTGRES_DB: "sr03_postgres"
+    ports:
+      - "5532:5432"
+    volumes:
+      - db_data_vf:/var/lib/postgresql/data/
+    networks:
+      - sr03-network
+  backend:
+    container_name: sr03-backend
+    build:
+      dockerfile: Dockerfile
+      context: .
+    environment:
+      DATABASE_URL: "jdbc:postgresql://sr03_chatapp_postgres:5432/sr03_postgres"
+      DATABASE_USERNAME: "sr03"
+      DATABASE_PASSWORD: "password-sr03"
+      JWT_SECRET: "yoN8E5dbc6Za+mdUnfDPiGEurGVwoXDmSrHDOtzon7E="
+      JWT_EXPIRATION: "86400000"
+      ANALYZE_TOXICITY: "True"
+      TOXICITY_ANALYZE_LINK: "http://toxicity:8090/analyze"
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+    networks:
+      - sr03-network
+  frontend:
+    container_name: sr03-chatapp
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    build:
+      dockerfile: Dockerfile
+      context: frontend
+    environment:
+      VITE_BACKEND_API_URL: "http://localhost:8080/api/v1/"
+      VITE_WS_URL: "ws://localhost:8080"
+    ports:
+      - "80:5173"
+    depends_on:
+      - backend
+    networks:
+      - sr03-network
+volumes:
+  db_data_vf:
+networks:
+  sr03-network:
+    driver: bridge
